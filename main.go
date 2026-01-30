@@ -35,11 +35,11 @@ type ModelLimit struct {
 }
 
 func getConfigPath() (string, error) {
-	configDir, err := os.UserConfigDir()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(configDir, "opencode", "opencode.json"), nil
+	return filepath.Join(homeDir, ".config", "opencode", "opencode.json"), nil
 }
 
 func loadConfig(path string) (*Config, error) {

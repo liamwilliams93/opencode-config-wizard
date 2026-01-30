@@ -71,8 +71,9 @@ Default model: ollama/qwen3-coder
 ## Config Location
 
 Configuration is stored at:
-- **Windows**: `%APPDATA%\opencode\opencode.json`
-- **Linux/macOS**: `~/.config/opencode/opencode.json`
+- **All platforms**: `~/.config/opencode/opencode.json`
+  - Windows: `C:\Users\<username>\.config\opencode\opencode.json`
+  - Linux/macOS: `~/.config/opencode/opencode.json`
 
 ## Features
 
