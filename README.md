@@ -63,6 +63,27 @@ Default model: ollama/qwen3-coder
 ./opencode-config-wizard set-default
 ```
 
+### Add model to existing provider
+```bash
+./opencode-config-wizard add-model
+```
+
+Example:
+```
+=== Add Model to Existing Provider ===
+Available providers:
+  1. test (test) - 1 model(s)
+Enter provider number or key: 1
+
+Adding model to provider: test (test)
+Model ID (e.g., qwen3-coder): llama3
+Display name [llama3]: Llama 3 70B
+Configure token limits? [n] (y/n): n
+Set as default model? [n] (y/n): n
+
+Model 'Llama 3 70B' added to provider 'test'
+```
+
 ### Delete a provider
 ```bash
 ./opencode-config-wizard delete
@@ -131,6 +152,7 @@ Configuration is stored at:
 | Command | Description |
 |---------|-------------|
 | `add` | Add a new OpenAI-compatible provider |
+| `add-model` | Add a model to an existing provider |
 | `list` | List all configured providers and settings |
 | `delete` | Delete a provider |
 | `set-default` | Set the default model |

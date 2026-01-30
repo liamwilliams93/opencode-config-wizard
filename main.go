@@ -382,18 +382,122 @@ func setDefaultModel() error {
 	return nil
 }
 
+func addModel() error {
+	configPath, err := getConfigPath()
+	if err != nil {
+		return err
+	}
+
+	config, err := loadConfig(configPath)
+	if err != nil {
+		return err
+	}
+
+	if len(config.Provider) == 0 {
+		fmt.Println("No providers configured. Use 'add' command first.")
+		return nil
+	}
+
+	fmt.Println("\n=== Add Model to Existing Provider ===")
+	fmt.Println("Available providers:")
+
+	providers := []string{}
+	i := 1
+	for key, provider := range config.Provider {
+		fmt.Printf("  %d. %s (%s) - %d model(s)\n", i, key, provider.Name, len(provider.Models))
+		providers = append(providers, key)
+		i++
+	}
+
+	selection := promptString("Enter provider number or key", "")
+	var providerKey string
+
+	if selection == "" {
+		fmt.Println("Cancelled")
+		return nil
+	}
+
+	num := 0
+	if _, err := fmt.Sscanf(selection, "%d", &num); err == nil && num > 0 && num <= len(providers) {
+		providerKey = providers[num-1]
+	} else {
+		providerKey = selection
+	}
+
+	if _, exists := config.Provider[providerKey]; !exists {
+		fmt.Printf("Provider '%s' not found\n", providerKey)
+		return nil
+	}
+
+	provider := config.Provider[providerKey]
+	fmt.Printf("\nAdding model to provider: %s (%s)\n", provider.Name, providerKey)
+
+	modelID := promptString("Model ID (e.g., qwen3-coder)", "")
+	if modelID == "" {
+		fmt.Println("Cancelled")
+		return nil
+	}
+
+	modelName := promptString("Display name", modelID)
+	model := Model{Name: modelName}
+
+	if promptBool("Configure token limits?", false) {
+		contextLimit := promptString("Context limit (tokens, e.g., 128000)", "")
+		outputLimit := promptString("Output limit (tokens, e.g., 65536)", "")
+
+		if contextLimit != "" || outputLimit != "" {
+			limit := &ModelLimit{}
+			if contextLimit != "" {
+				fmt.Sscanf(contextLimit, "%d", &limit.Context)
+			}
+			if outputLimit != "" {
+				fmt.Sscanf(outputLimit, "%d", &limit.Output)
+			}
+			model.Limit = limit
+		}
+	}
+
+	if _, exists := provider.Models[modelID]; exists {
+		fmt.Printf("\nWarning: Model '%s' already exists. Overwrite? ", modelID)
+		var confirm string
+		fmt.Scanln(&confirm)
+		if confirm != "y" && confirm != "Y" {
+			fmt.Println("Cancelled")
+			return nil
+		}
+	}
+
+	provider.Models[modelID] = model
+
+	if promptBool("Set as default model?", false) {
+		config.Model = fmt.Sprintf("%s/%s", providerKey, modelID)
+	}
+
+	if err := saveConfig(config, configPath); err != nil {
+		return err
+	}
+
+	fmt.Printf("\nModel '%s' added to provider '%s'\n", modelName, provider.Name)
+	if config.Model == fmt.Sprintf("%s/%s", providerKey, modelID) {
+		fmt.Printf("Default model: %s\n", config.Model)
+	}
+	return nil
+}
+
 func showHelp() {
 	fmt.Println("OpenCode Configuration Wizard")
 	fmt.Println("\nUsage:")
 	fmt.Println("  opencode-config-wizard [command]")
 	fmt.Println("\nCommands:")
 	fmt.Println("  add          Add a new OpenAI-compatible provider")
+	fmt.Println("  add-model    Add a model to an existing provider")
 	fmt.Println("  list         List all configured providers")
 	fmt.Println("  delete       Delete a provider")
 	fmt.Println("  set-default  Set default model")
 	fmt.Println("  help         Show this help message")
 	fmt.Println("\nExamples:")
 	fmt.Println("  opencode-config-wizard add")
+	fmt.Println("  opencode-config-wizard add-model")
 	fmt.Println("  opencode-config-wizard list")
 	fmt.Println("  opencode-config-wizard set-default")
 }
@@ -409,6 +513,11 @@ func main() {
 	switch command {
 	case "add":
 		if err := addProvider(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+	case "add-model":
+		if err := addModel(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}
