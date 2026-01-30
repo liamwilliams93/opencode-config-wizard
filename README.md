@@ -4,6 +4,18 @@ A CLI tool to easily configure OpenCode with custom OpenAI-compatible API provid
 
 ## Installation
 
+### Install with Go
+
+```bash
+go install github.com/liamwilliams93/Opencode-Config-Wizard@latest
+```
+
+This will install the binary to `GOBIN` (or `GOPATH/bin`) as `Opencode-Config-Wizard`. You can then run it from anywhere:
+
+```bash
+Opencode-Config-Wizard help
+```
+
 ### Build from source
 
 **Windows:**
@@ -21,7 +33,9 @@ Or manually:
 go build -o opencode-config-wizard .
 ```
 
-**Note:** The config file will be created automatically when you run `add` command for the first time.
+**Note:** The config file will be created automatically when you run `add` command for first time.
+
+**Command name:** If you installed via `go install`, the command is `Opencode-Config-Wizard`. If you built from source, use `opencode-config-wizard` (or `opencode-config-wizard.exe` on Windows).
 
 ## Usage
 
