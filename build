@@ -1,0 +1,16 @@
+#!/bin/bash
+echo "Building OpenCode Config Wizard..."
+
+# Build for current OS
+go build -o opencode-config-wizard .
+if [ $? -ne 0 ]; then
+    echo "Build failed!"
+    exit 1
+fi
+
+# Make executable on Unix systems
+if [[ "$OSTYPE" != "msys" && "$OSTYPE" != "win32" && "$OSTYPE" != "windows" ]]; then
+    chmod +x opencode-config-wizard
+fi
+
+echo "Build successful: opencode-config-wizard"
