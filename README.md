@@ -13,7 +13,7 @@ go install github.com/liamwilliams93/opencode-config-wizard@latest
 This will install the binary to `GOBIN` (or `GOPATH/bin`) as `opencode-config-wizard`. You can then run it from anywhere:
 
 ```bash
-Opencode-Config-Wizard help
+opencode-config-wizard help
 ```
 
 ### Build from source
