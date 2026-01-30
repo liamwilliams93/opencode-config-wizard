@@ -338,6 +338,114 @@ func deleteProvider() error {
 	return nil
 }
 
+func deleteModel() error {
+	configPath, err := getConfigPath()
+	if err != nil {
+		return err
+	}
+
+	config, err := loadConfig(configPath)
+	if err != nil {
+		return err
+	}
+
+	if len(config.Provider) == 0 {
+		fmt.Println("No providers configured. Use 'add' command first.")
+		return nil
+	}
+
+	fmt.Println("\n=== Delete Model ===")
+	fmt.Println("Available providers:")
+
+	providers := []string{}
+	i := 1
+	for key, provider := range config.Provider {
+		fmt.Printf("  %d. %s (%s) - %d model(s)\n", i, key, provider.Name, len(provider.Models))
+		providers = append(providers, key)
+		i++
+	}
+
+	selection := promptString("Enter provider number or key", "")
+	var providerKey string
+
+	if selection == "" {
+		fmt.Println("Cancelled")
+		return nil
+	}
+
+	num := 0
+	if _, err := fmt.Sscanf(selection, "%d", &num); err == nil && num > 0 && num <= len(providers) {
+		providerKey = providers[num-1]
+	} else {
+		providerKey = selection
+	}
+
+	if _, exists := config.Provider[providerKey]; !exists {
+		fmt.Printf("Provider '%s' not found\n", providerKey)
+		return nil
+	}
+
+	provider := config.Provider[providerKey]
+	if len(provider.Models) == 0 {
+		fmt.Printf("Provider '%s' has no models to delete\n", provider.Name)
+		return nil
+	}
+
+	fmt.Printf("\nProvider: %s (%s)\n", provider.Name, providerKey)
+	fmt.Println("Available models:")
+
+	modelKeys := []string{}
+	j := 1
+	for modelID, model := range provider.Models {
+		fmt.Printf("  %d. %s (%s)\n", j, model.Name, modelID)
+		modelKeys = append(modelKeys, modelID)
+		j++
+	}
+
+	modelSelection := promptString("Enter model number or ID", "")
+	var modelID string
+
+	if modelSelection == "" {
+		fmt.Println("Cancelled")
+		return nil
+	}
+
+	if _, err := fmt.Sscanf(modelSelection, "%d", &num); err == nil && num > 0 && num <= len(modelKeys) {
+		modelID = modelKeys[num-1]
+	} else {
+		modelID = modelSelection
+	}
+
+	if _, exists := provider.Models[modelID]; !exists {
+		fmt.Printf("Model '%s' not found\n", modelID)
+		return nil
+	}
+
+	modelName := provider.Models[modelID].Name
+
+	fmt.Printf("\nAre you sure you want to delete model '%s' from provider '%s'? ", modelName, provider.Name)
+	var confirm string
+	fmt.Scanln(&confirm)
+	if confirm != "y" && confirm != "Y" {
+		fmt.Println("Cancelled")
+		return nil
+	}
+
+	delete(provider.Models, modelID)
+
+	if config.Model == fmt.Sprintf("%s/%s", providerKey, modelID) {
+		fmt.Printf("Warning: This was the default model. Default model cleared.\n")
+		config.Model = ""
+	}
+
+	if err := saveConfig(config, configPath); err != nil {
+		return err
+	}
+
+	fmt.Printf("Deleted model: %s\n", modelName)
+	return nil
+}
+
 func setDefaultModel() error {
 	configPath, err := getConfigPath()
 	if err != nil {
@@ -493,12 +601,14 @@ func showHelp() {
 	fmt.Println("  add-model    Add a model to an existing provider")
 	fmt.Println("  list         List all configured providers")
 	fmt.Println("  delete       Delete a provider")
+	fmt.Println("  delete-model Delete a model from a provider")
 	fmt.Println("  set-default  Set default model")
 	fmt.Println("  help         Show this help message")
 	fmt.Println("\nExamples:")
 	fmt.Println("  opencode-config-wizard add")
 	fmt.Println("  opencode-config-wizard add-model")
 	fmt.Println("  opencode-config-wizard list")
+	fmt.Println("  opencode-config-wizard delete-model")
 	fmt.Println("  opencode-config-wizard set-default")
 }
 
@@ -528,6 +638,11 @@ func main() {
 		}
 	case "delete":
 		if err := deleteProvider(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+	case "delete-model":
+		if err := deleteModel(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}

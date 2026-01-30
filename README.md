@@ -89,6 +89,28 @@ Model 'Llama 3 70B' added to provider 'test'
 ./opencode-config-wizard delete
 ```
 
+### Delete a model
+```bash
+./opencode-config-wizard delete-model
+```
+
+Example:
+```
+=== Delete Model ===
+Available providers:
+  1. test (test) - 2 model(s)
+Enter provider number or key: 1
+
+Provider: test (test)
+Available models:
+  1. qwen3-coder (qwen3-coder)
+  2. testmodel (testmodel)
+Enter model number or ID: 2
+
+Are you sure you want to delete model 'testmodel' from provider 'test'? y
+Deleted model: testmodel
+```
+
 ## Config Location
 
 Configuration is stored at:
@@ -155,7 +177,8 @@ Configuration is stored at:
 | `add-model` | Add a model to an existing provider |
 | `list` | List all configured providers and settings |
 | `delete` | Delete a provider |
-| `set-default` | Set the default model |
+| `delete-model` | Delete a model from a provider |
+| `set-default` | Set default model |
 | `help` | Show help message |
 
 ## Advanced Configuration
