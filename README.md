@@ -108,6 +108,67 @@ Model 'Llama 3 70B' added to provider 'test'
 ./opencode-config-wizard delete-model
 ```
 
+### Add an MCP server
+```bash
+./opencode-config-wizard add-mcp
+```
+
+Example with a local MCP server:
+```
+=== Add MCP Server ===
+Server name (e.g., my-mcp): context7
+Server type:
+  1. Local (runs a command)
+  2. Remote (connects to a URL)
+Select type (1 or 2) [1]: 2
+
+=== Remote MCP Server ===
+Server URL (e.g., https://mcp.example.com/mcp): https://mcp.context7.com/mcp
+Add custom headers? [n] (y/n): y
+Header name (leave blank to finish): CONTEXT7_API_KEY
+Header value: {env:CONTEXT7_API_KEY}
+Add another header? [n] (y/n): n
+Configure OAuth? [n] (y/n): n
+Enable server on startup? [y] (y/n): y
+Set custom timeout? [n] (y/n): n
+
+Configuration saved to: C:\Users\liamw\.config\opencode\opencode.json
+Added MCP server: context7 (type: remote)
+Status: enabled
+```
+
+Example with a local MCP server:
+```
+=== Add MCP Server ===
+Server name (e.g., my-mcp): mcp_everything
+Server type:
+  1. Local (runs a command)
+  2. Remote (connects to a URL)
+Select type (1 or 2) [1]: 1
+
+=== Local MCP Server ===
+Command (e.g., npx, bun) [npx]: npx
+Arguments (e.g., -y @modelcontextprotocol/server-everything): -y @modelcontextprotocol/server-everything
+Add another argument? [n] (y/n): n
+Add environment variables? [n] (y/n): n
+Enable server on startup? [y] (y/n): y
+Set custom timeout? [n] (y/n): n
+
+Configuration saved to: C:\Users\liamw\.config\opencode\opencode.json
+Added MCP server: mcp_everything (type: local)
+Status: enabled
+```
+
+### List MCP servers
+```bash
+./opencode-config-wizard list-mcp
+```
+
+### Delete an MCP server
+```bash
+./opencode-config-wizard delete-mcp
+```
+
 Example:
 ```
 === Delete Model ===
@@ -139,6 +200,7 @@ Configuration is stored at:
 - **Token limits**: Configure context and output token limits per model
 - **Default model**: Set a default model for quick access
 - **Provider management**: List, add, and delete providers easily
+- **MCP servers**: Add, list, and delete local and remote MCP servers
 
 ## Example Config
 
@@ -187,12 +249,18 @@ Configuration is stored at:
 
 | Command | Description |
 |---------|-------------|
+| Provider Commands | |
 | `add` | Add a new OpenAI-compatible provider |
 | `add-model` | Add a model to an existing provider |
 | `list` | List all configured providers and settings |
 | `delete` | Delete a provider |
 | `delete-model` | Delete a model from a provider |
 | `set-default` | Set default model |
+| MCP Server Commands | |
+| `add-mcp` | Add a new MCP server (local or remote) |
+| `list-mcp` | List all configured MCP servers |
+| `delete-mcp` | Delete an MCP server |
+| Other | |
 | `help` | Show help message |
 
 ## Advanced Configuration
@@ -241,3 +309,4 @@ Configure context and output limits per model:
 For more information about OpenCode configuration, visit:
 - https://opencode.ai/docs/config/
 - https://opencode.ai/docs/providers/
+- https://opencode.ai/docs/mcp-servers/
