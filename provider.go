@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func addProvider() error {
@@ -262,54 +263,25 @@ func deleteModel() error {
 	}
 
 	fmt.Println("\n=== Delete Model ===")
-	fmt.Println("Available providers:")
-
-	providers := []string{}
-	i := 1
-	for key, provider := range config.Provider {
-		fmt.Printf("  %d. %s (%s) - %d model(s)\n", i, key, provider.Name, len(provider.Models))
-		providers = append(providers, key)
-		i++
-	}
-
-	selection := promptString("Enter provider number or key", "")
-	var providerKey string
-
-	if selection == "" {
-		fmt.Println("Cancelled")
-		return nil
-	}
-
-	num := 0
-	if _, err := fmt.Sscanf(selection, "%d", &num); err == nil && num > 0 && num <= len(providers) {
-		providerKey = providers[num-1]
-	} else {
-		providerKey = selection
-	}
-
-	if _, exists := config.Provider[providerKey]; !exists {
-		fmt.Printf("Provider '%s' not found\n", providerKey)
-		return nil
-	}
-
-	provider := config.Provider[providerKey]
-	if len(provider.Models) == 0 {
-		fmt.Printf("Provider '%s' has no models to delete\n", provider.Name)
-		return nil
-	}
-
-	fmt.Printf("\nProvider: %s (%s)\n", provider.Name, providerKey)
 	fmt.Println("Available models:")
 
-	modelKeys := []string{}
-	j := 1
-	for modelID, model := range provider.Models {
-		fmt.Printf("  %d. %s (%s)\n", j, model.Name, modelID)
-		modelKeys = append(modelKeys, modelID)
-		j++
+	models := []string{}
+	i := 1
+	for providerKey, provider := range config.Provider {
+		for modelID := range provider.Models {
+			modelRef := fmt.Sprintf("%s/%s", providerKey, modelID)
+			models = append(models, modelRef)
+			fmt.Printf("  %d. %s (%s)\n", i, modelRef, provider.Models[modelID].Name)
+			i++
+		}
 	}
 
-	choice := getMenuChoice(len(modelKeys))
+	if len(models) == 0 {
+		fmt.Println("No models configured")
+		return nil
+	}
+
+	choice := getMenuChoice(len(models))
 	if choice == -1 {
 		fmt.Println("Invalid choice")
 		return nil
@@ -319,23 +291,37 @@ func deleteModel() error {
 		return nil
 	}
 
-	modelID := modelKeys[choice-1]
+	selectedModel := models[choice-1]
 
-	if _, exists := provider.Models[modelID]; !exists {
+	parts := strings.Split(selectedModel, "/")
+	if len(parts) != 2 {
+		fmt.Printf("Invalid model reference: %s\n", selectedModel)
+		return nil
+	}
+
+	providerKey := parts[0]
+	modelID := parts[1]
+
+	provider, exists := config.Provider[providerKey]
+	if !exists {
+		fmt.Printf("Provider '%s' not found\n", providerKey)
+		return nil
+	}
+
+	model, exists := provider.Models[modelID]
+	if !exists {
 		fmt.Printf("Model '%s' not found\n", modelID)
 		return nil
 	}
 
-	modelName := provider.Models[modelID].Name
-
-	if !promptBool(fmt.Sprintf("\nAre you sure you want to delete model '%s' from provider '%s'?", modelName, provider.Name), false) {
+	if !promptBool(fmt.Sprintf("\nAre you sure you want to delete model '%s' from provider '%s'?", model.Name, provider.Name), false) {
 		fmt.Println("Cancelled")
 		return nil
 	}
 
 	delete(provider.Models, modelID)
 
-	if config.Model == fmt.Sprintf("%s/%s", providerKey, modelID) {
+	if config.Model == selectedModel {
 		fmt.Printf("Warning: This was the default model. Default model cleared.\n")
 		config.Model = ""
 	}
@@ -344,7 +330,7 @@ func deleteModel() error {
 		return err
 	}
 
-	fmt.Printf("Deleted model: %s\n", modelName)
+	fmt.Printf("Deleted model: %s\n", model.Name)
 	return nil
 }
 

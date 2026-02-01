@@ -64,6 +64,8 @@ func executeWithErrorHandling(fn func() error) {
 	if err := fn(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)
 	}
+	fmt.Println("\nPress Enter to continue...")
+	bufio.NewScanner(os.Stdin).Scan()
 }
 
 func runProviderMenu() {
