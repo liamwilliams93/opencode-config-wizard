@@ -106,7 +106,7 @@ func addProvider() error {
 		}
 	}
 
-	if len(provider.Models) > 0 && (config.Model == "" || promptBool("Set as default model?", false)) {
+	if len(provider.Models) > 0 && promptBool("Set as default model?", false) {
 		config.Model = fmt.Sprintf("%s/%s", providerKey, getFirstModelID(provider.Models))
 	}
 
