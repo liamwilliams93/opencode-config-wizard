@@ -179,7 +179,7 @@ func addMCPServer() error {
 
 	fmt.Printf("\nConfiguration saved to: %s\n", configPath)
 	fmt.Printf("Added MCP server: %s (type: %s)\n", serverName, serverType)
-	if mcpServer.Enabled != nil && *mcpServer.Enabled {
+	if mcpServer.Enabled == nil || *mcpServer.Enabled {
 		fmt.Println("Status: enabled")
 	} else {
 		fmt.Println("Status: disabled")
@@ -208,13 +208,11 @@ func listMCPServers() error {
 		fmt.Printf("\nServer: %s\n", name)
 		fmt.Printf("  Type: %s\n", server.Type)
 
-		if server.Enabled != nil {
-			status := "disabled"
-			if *server.Enabled {
-				status = "enabled"
-			}
-			fmt.Printf("  Status: %s\n", status)
+		status := "disabled"
+		if server.Enabled == nil || *server.Enabled {
+			status = "enabled"
 		}
+		fmt.Printf("  Status: %s\n", status)
 
 		if server.Type == "local" {
 			if len(server.Command) > 0 {
@@ -269,7 +267,7 @@ func deleteMCPServer() error {
 	keys := make([]string, 0, len(config.MCP))
 	for name, server := range config.MCP {
 		enabledStr := "disabled"
-		if server.Enabled != nil && *server.Enabled {
+		if server.Enabled == nil || *server.Enabled {
 			enabledStr = "enabled"
 		}
 		fmt.Printf("  %s (%s) - %s\n", name, server.Type, enabledStr)
