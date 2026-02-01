@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func addProvider() error {
@@ -231,6 +229,12 @@ func deleteProvider() error {
 	keyToDelete := keys[choice-1]
 
 	providerName := config.Provider[keyToDelete].Name
+
+	if !promptBool(fmt.Sprintf("Are you sure you want to delete provider '%s'?", providerName), false) {
+		fmt.Println("Cancelled")
+		return nil
+	}
+
 	delete(config.Provider, keyToDelete)
 
 	if err := saveConfig(config, configPath); err != nil {
@@ -324,11 +328,7 @@ func deleteModel() error {
 
 	modelName := provider.Models[modelID].Name
 
-	fmt.Printf("\nAre you sure you want to delete model '%s' from provider '%s'? ", modelName, provider.Name)
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	confirm := strings.TrimSpace(scanner.Text())
-	if confirm != "y" && confirm != "Y" {
+	if !promptBool(fmt.Sprintf("\nAre you sure you want to delete model '%s' from provider '%s'?", modelName, provider.Name), false) {
 		fmt.Println("Cancelled")
 		return nil
 	}
@@ -475,11 +475,7 @@ func addModel() error {
 	}
 
 	if _, exists := provider.Models[modelID]; exists {
-		fmt.Printf("\nWarning: Model '%s' already exists. Overwrite? ", modelID)
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		confirm := strings.TrimSpace(scanner.Text())
-		if confirm != "y" && confirm != "Y" {
+		if !promptBool(fmt.Sprintf("\nWarning: Model '%s' already exists. Overwrite?", modelID), false) {
 			fmt.Println("Cancelled")
 			return nil
 		}

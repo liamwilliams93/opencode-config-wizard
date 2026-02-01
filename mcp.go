@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -42,11 +41,7 @@ func addMCPServer() error {
 	}
 
 	if _, exists := config.MCP[serverName]; exists {
-		fmt.Printf("Server '%s' already exists. Overwrite? ", serverName)
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		confirm := strings.TrimSpace(scanner.Text())
-		if confirm != "y" && confirm != "Y" {
+		if !promptBool(fmt.Sprintf("Server '%s' already exists. Overwrite?", serverName), false) {
 			fmt.Println("Cancelled")
 			return nil
 		}
