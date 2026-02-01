@@ -284,6 +284,11 @@ func deleteMCPServer() error {
 
 	nameToDelete := keys[choice-1]
 
+	if !promptBool(fmt.Sprintf("Are you sure you want to delete MCP server '%s'?", nameToDelete), false) {
+		fmt.Println("Cancelled")
+		return nil
+	}
+
 	delete(config.MCP, nameToDelete)
 
 	if err := saveConfig(config, configPath); err != nil {
