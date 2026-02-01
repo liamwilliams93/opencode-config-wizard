@@ -209,22 +209,26 @@ func deleteProvider() error {
 
 	fmt.Println("\n=== Delete Provider ===")
 	fmt.Println("Available providers:")
+
 	keys := make([]string, 0, len(config.Provider))
+	i := 1
 	for key, provider := range config.Provider {
-		fmt.Printf("  %s (%s)\n", key, provider.Name)
+		fmt.Printf("  %d. %s (%s)\n", i, key, provider.Name)
 		keys = append(keys, key)
+		i++
 	}
 
-	keyToDelete := promptString("Enter provider key to delete", "")
-	if keyToDelete == "" {
+	choice := getMenuChoice(len(keys))
+	if choice == -1 {
+		fmt.Println("Invalid choice")
+		return nil
+	}
+	if choice == 0 {
 		fmt.Println("Cancelled")
 		return nil
 	}
 
-	if _, exists := config.Provider[keyToDelete]; !exists {
-		fmt.Printf("Provider '%s' not found\n", keyToDelete)
-		return nil
-	}
+	keyToDelete := keys[choice-1]
 
 	providerName := config.Provider[keyToDelete].Name
 	delete(config.Provider, keyToDelete)
@@ -301,19 +305,17 @@ func deleteModel() error {
 		j++
 	}
 
-	modelSelection := promptString("Enter model number or ID", "")
-	var modelID string
-
-	if modelSelection == "" {
+	choice := getMenuChoice(len(modelKeys))
+	if choice == -1 {
+		fmt.Println("Invalid choice")
+		return nil
+	}
+	if choice == 0 {
 		fmt.Println("Cancelled")
 		return nil
 	}
 
-	if _, err := fmt.Sscanf(modelSelection, "%d", &num); err == nil && num > 0 && num <= len(modelKeys) {
-		modelID = modelKeys[num-1]
-	} else {
-		modelID = modelSelection
-	}
+	modelID := modelKeys[choice-1]
 
 	if _, exists := provider.Models[modelID]; !exists {
 		fmt.Printf("Model '%s' not found\n", modelID)
@@ -366,20 +368,27 @@ func setDefaultModel() error {
 	fmt.Println("Available models:")
 
 	models := []string{}
+	i := 1
 	for providerKey, provider := range config.Provider {
 		for modelID := range provider.Models {
 			modelRef := fmt.Sprintf("%s/%s", providerKey, modelID)
 			models = append(models, modelRef)
-			fmt.Printf("  - %s (%s)\n", modelRef, provider.Models[modelID].Name)
+			fmt.Printf("  %d. %s (%s)\n", i, modelRef, provider.Models[modelID].Name)
+			i++
 		}
 	}
 
-	selectedModel := promptString("Enter model (provider/model)", "")
-	if selectedModel == "" {
+	choice := getMenuChoice(len(models))
+	if choice == -1 {
+		fmt.Println("Invalid choice")
+		return nil
+	}
+	if choice == 0 {
 		fmt.Println("Cancelled")
 		return nil
 	}
 
+	selectedModel := models[choice-1]
 	config.Model = selectedModel
 
 	if err := saveConfig(config, configPath); err != nil {

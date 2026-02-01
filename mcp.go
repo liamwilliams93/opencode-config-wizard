@@ -264,26 +264,30 @@ func deleteMCPServer() error {
 
 	fmt.Println("\n=== Delete MCP Server ===")
 	fmt.Println("Available servers:")
+
 	keys := make([]string, 0, len(config.MCP))
+	i := 1
 	for name, server := range config.MCP {
 		enabledStr := "disabled"
 		if server.Enabled == nil || *server.Enabled {
 			enabledStr = "enabled"
 		}
-		fmt.Printf("  %s (%s) - %s\n", name, server.Type, enabledStr)
+		fmt.Printf("  %d. %s (%s) - %s\n", i, name, server.Type, enabledStr)
 		keys = append(keys, name)
+		i++
 	}
 
-	nameToDelete := promptString("Enter server name to delete", "")
-	if nameToDelete == "" {
+	choice := getMenuChoice(len(keys))
+	if choice == -1 {
+		fmt.Println("Invalid choice")
+		return nil
+	}
+	if choice == 0 {
 		fmt.Println("Cancelled")
 		return nil
 	}
 
-	if _, exists := config.MCP[nameToDelete]; !exists {
-		fmt.Printf("Server '%s' not found\n", nameToDelete)
-		return nil
-	}
+	nameToDelete := keys[choice-1]
 
 	delete(config.MCP, nameToDelete)
 
